@@ -25,7 +25,7 @@ app.post("/notes", (req, res) => {
 });
 
 // DELETE note
-app.delete("/note/:id", (req, res) => {
+app.delete("/notes/:id", (req, res) => {
   const id = parseInt(req.params.id);
   notes = notes.filter((note) => note.id !== id);
   res.json({ success: true });
