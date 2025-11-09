@@ -8,14 +8,26 @@ import {
 } from "../service/notesApi";
 import NoteItem from "../components/NoteItem";
 import NoteForm from "../components/NoteForm";
+import Spinner from "../components/Spinner";
 
 const NotesPage = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchNotes = async () => {
-    const data = await getNotes();
-    setNotes(data);
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getNotes();
+      setNotes(data);
+    } catch (err) {
+      setError("Notes could not be loaded.");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -23,8 +35,16 @@ const NotesPage = () => {
   }, []);
 
   const handleAdd = async (note: Omit<Note, "id">) => {
-    const newNote = await createNote(note);
-    setNotes((prev) => [...prev, newNote]);
+    try {
+      setLoading(true);
+      setError(null);
+      const newNote = await createNote(note);
+      setNotes((prev) => [...prev, newNote]);
+    } catch {
+      setError("Note could not be added.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpdate = async (updated: Omit<Note, "id">) => {
@@ -38,13 +58,25 @@ const NotesPage = () => {
   };
 
   const handleDelete = async (id: number) => {
-    await deleteNote(id);
-    setNotes((prev) => prev.filter((n) => n.id !== id));
+    try {
+      setLoading(true);
+      setError(null);
+      await deleteNote(id);
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+    } catch {
+      setError("Note could not be deleted.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{ padding: 20 }}>
       <h1>Notes</h1>
+
+      {loading && <Spinner />}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
       <NoteForm
         onAdd={handleAdd}
         onUpdate={handleUpdate}
